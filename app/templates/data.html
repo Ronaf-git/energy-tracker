@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Energy Data</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+        table.data {
+            border-collapse: collapse;
+            width: 100%;
+            margin-bottom: 30px;
+        }
+        table.data th, table.data td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+        table.data th {
+            background-color: #007BFF;
+            color: white;
+        }
+        img {
+            max-width: 90%;
+            height: auto;
+            margin-top: 20px;
+        }
+        .button-container {
+            margin-top: 30px;
+        }
+        .back-button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            text-decoration: none;
+        }
+        .back-button:hover {
+            background-color: #45a049;
+        }
+        form {
+            margin: 20px 0;
+        }
+        label, input, select {
+            margin: 0 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Energy and Water Usage Data</h1>
+
+    <!-- 🔽 Interactive Form -->
+    <form id="filterForm" method="get" action="/data">
+      <!-- Your inputs/selects here -->
+      <label for="start_date">Start Date:</label>
+      <input type="date" id="start_date" name="start_date" value="{{ request.args.get('start_date', '') }}">
+
+      <label for="end_date">End Date:</label>
+      <input type="date" id="end_date" name="end_date" value="{{ request.args.get('end_date', '') }}">
+
+      <label for="data_type">Data Type:</label>
+      <select id="data_type" name="data_type">
+        <option value="all" {% if request.args.get('data_type') == 'all' or not request.args.get('data_type') %}selected{% endif %}>All</option>
+        <option value="gaz" {% if request.args.get('data_type') == 'gaz' %}selected{% endif %}>Gaz</option>
+        <option value="elect_jour" {% if request.args.get('data_type') == 'elect_jour' %}selected{% endif %}>Electricité Jour</option>
+        <option value="elect_nuit" {% if request.args.get('data_type') == 'elect_nuit' %}selected{% endif %}>Electricité Nuit</option>
+        <option value="eau" {% if request.args.get('data_type') == 'eau' %}selected{% endif %}>Eau</option>
+      </select>
+
+      <label for="view">View By:</label>
+      <select id="view" name="view">
+        <option value="daily" {% if request.args.get('view') == 'daily' %}selected{% endif %}>Daily</option>
+        <option value="weekly" {% if request.args.get('view') == 'weekly' %}selected{% endif %}>Weekly</option>
+        <option value="monthly" {% if request.args.get('view') == 'monthly' %}selected{% endif %}>Monthly</option>
+        <option value="yearly" {% if request.args.get('view') == 'yearly' %}selected{% endif %}>Yearly</option>
+      </select>
+    </form>
+
+    <div class="button-container">
+        <a href="/" class="back-button">Back to Submit Data</a>
+    </div>
+
+    <h2>Usage Plot</h2>
+    <img src="data:image/png;base64,{{ plot_url }}" alt="Energy Usage Plot">
+
+    <h2>Data Table</h2>
+    {% for table in tables %}
+        {{ table | safe }}
+    {% endfor %}
+
+
+    <script>
+      const form = document.getElementById('filterForm');
+
+      form.querySelectorAll('input, select').forEach(element => {
+        element.addEventListener('change', () => {
+          form.submit();
+        });
+      });
+  </script>
+</body>
+</html>

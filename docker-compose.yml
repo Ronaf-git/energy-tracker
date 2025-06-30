@@ -1,0 +1,18 @@
+
+services:
+  energy_app:
+    image : energy-tracker-energy_app:latest
+    build: .
+    ports:
+      - "6789:5000"
+    volumes:
+      - /volume1/Drive/Documents Gestion Quotidienne/DB/Energie:/data
+    restart: always
+
+volumes:
+  energy_data:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: ./energy_data
