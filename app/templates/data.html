@@ -1,61 +1,66 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8" />
-    <title>Reporting Energie</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-        }
-        table.data {
-            border-collapse: collapse;
-            width: 100%;
-            margin-bottom: 30px;
-        }
-        table.data th, table.data td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: center;
-        }
-        table.data th {
-            background-color: #007BFF;
-            color: white;
-        }
-        img {
-            max-width: 90%;
-            height: auto;
-            margin-top: 20px;
-        }
-        .button-container {
-            margin-top: 30px;
-        }
-        .back-button {
-            padding: 10px 20px;
-            font-size: 16px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            cursor: pointer;
-            border-radius: 5px;
-            text-decoration: none;
-        }
-        .back-button:hover {
-            background-color: #45a049;
-        }
-        form {
-            margin: 20px 0;
-        }
-        label, input, select {
-            margin: 0 10px;
-        }
-    </style>
-</head>
-<body>
-    <h1>Reporting Energétique</h1>
+{% extends "base.html" %}
 
-    <!-- 🔽 Interactive Form -->
-    <form id="filterForm" method="get" action="/data">
+{% block title %}Suivi Énergie - Reporting{% endblock %}
+
+{% block styles %}
+<style>
+    main.content {
+        font-family: Arial, sans-serif;
+        text-align: center;
+        overflow-x: hidden;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 20px;
+    }
+    table.data {
+        border-collapse: collapse;
+        width: 100%;
+        margin-bottom: 30px;
+    }
+    table.data th, table.data td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: center;
+    }
+    table.data th {
+        background-color: #007BFF;
+        color: white;
+    }
+
+    main.content img {
+        max-width: 90%;
+        height: auto;
+        margin-top: 20px;
+    }
+
+    .button-container {
+        margin-top: 30px;
+    }
+    .back-button {
+        padding: 10px 20px;
+        font-size: 16px;
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        cursor: pointer;
+        border-radius: 5px;
+        text-decoration: none;
+    }
+    .back-button:hover {
+        background-color: #45a049;
+    }
+    form {
+        margin: 20px 0;
+    }
+    label, input, select {
+        margin: 0 10px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- 🔽 Interactive Form -->
+<form id="filterForm" method="get" action="/data">
     <label for="start_date">De :</label>
     <input type="date" id="start_date" name="start_date" value="{{ request.args.get('start_date', '') }}">
 
@@ -82,29 +87,30 @@
         <option value="monthly" {% if request.args.get('view') == 'monthly' %}selected{% endif %}>Mois</option>
         <option value="yearly" {% if request.args.get('view') == 'yearly' %}selected{% endif %}>Année</option>
     </select>
+</form>
+
+<img src="data:image/png;base64,{{ plot_url }}" alt="Energy Usage Plot">
+
+<div class="button-container">
+    <form method="get" action="/download_xlsx">
+        <input type="hidden" name="start_date" value="{{ request.args.get('start_date', '') }}">
+        <input type="hidden" name="end_date" value="{{ request.args.get('end_date', '') }}">
+        <input type="hidden" name="data_type" value="{{ request.args.get('data_type', '') }}">
+        <input type="hidden" name="view" value="{{ request.args.get('view', '') }}">
+        <button type="submit" class="back-button" style="background-color: #f39c12;">Télécharger en XLSX</button>
     </form>
+</div>
+{% for table in tables %}
+    {{ table | safe }}
+{% endfor %}
 
-    <div class="button-container">
-        <a href="/" class="back-button">Retour à l'encodage</a>
-    </div>
+<script>
+  const form = document.getElementById('filterForm');
 
-    <h2>Graphe</h2>
-    <img src="data:image/png;base64,{{ plot_url }}" alt="Energy Usage Plot">
-
-    <h2>Data Table</h2>
-    {% for table in tables %}
-        {{ table | safe }}
-    {% endfor %}
-
-
-    <script>
-      const form = document.getElementById('filterForm');
-
-      form.querySelectorAll('input, select').forEach(element => {
-        element.addEventListener('change', () => {
-          form.submit();
-        });
-      });
-  </script>
-</body>
-</html>
+  form.querySelectorAll('input, select').forEach(element => {
+    element.addEventListener('change', () => {
+      form.submit();
+    });
+  });
+</script>
+{% endblock %}

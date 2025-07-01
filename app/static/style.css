@@ -1,0 +1,242 @@
+
+/* Masque la page par défaut pour éviter flash */
+html {
+  visibility: hidden;
+}
+
+/* Quand la classe "js-ready" est présente, affiche la page */
+html.js-ready {
+  visibility: visible;
+}
+
+/* Reset */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+/* Base */
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  font-family: system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  /* ===== FIX HEADER JUMP ===== */
+  /* Toujours réserver la place pour scrollbar verticale */
+  overflow-y: scroll;
+  scrollbar-gutter: stable;
+}
+
+/* HEADER */
+header {
+  position: sticky;
+  top: 0;
+  width: 100%;
+  height: 60px;
+  background-color: #fff;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  user-select: none;
+}
+
+/* NAVBAR CONTAINER */
+.navbar {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+/* Nav container fixe largeur */
+.nav-container {
+  max-width: 1200px;
+  width: 100%;
+  height: 100%;
+  padding: 0 30px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 40px;
+}
+
+/* Logo */
+.logo {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+  font-weight: 700;
+  font-size: 1.5rem;
+  color: #2c3e50;
+  margin: 0;
+  text-decoration: none;
+}
+.logo img {
+  height: 40px;
+  width: auto;
+  display: block;
+}
+
+/* Tabs */
+.nav-tabs {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  flex-grow: 1;
+}
+
+.nav-tabs li {
+  list-style: none;
+  flex-shrink: 0;
+}
+
+.tab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 24px;
+  border-radius: 8px 8px 0 0;
+  background-color: #ecf0f1;
+  color: #2c3e50;
+  text-decoration: none;
+  font-weight: 500;
+  border: 2px solid transparent;
+  box-sizing: border-box;
+  white-space: nowrap;
+  user-select: none;
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+  text-align: center;
+  min-width: 110px;
+}
+
+.tab.active {
+  background-color: #3498db;
+  color: white;
+  border-color: #3498db;
+}
+
+.tab:hover {
+  background-color: #d0d7de;
+}
+
+.tab:focus {
+  outline: none;
+}
+
+/* Dark mode toggle */
+.dark-mode-toggle-wrapper {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+}
+
+#darkModeToggle {
+  font-size: 18px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: #2c3e50;
+  padding: 4px 8px;
+  transition: color 0.3s ease;
+}
+
+#darkModeToggle:hover {
+  color: #3498db;
+}
+
+/* Responsive */
+@media screen and (max-width: 600px) {
+  .nav-container {
+    flex-wrap: wrap;
+    padding: 10px 15px;
+  }
+  .nav-tabs {
+    order: 3;
+    width: 100%;
+    justify-content: center;
+    margin-top: 8px;
+  }
+  .tab {
+    padding: 10px 15px;
+    font-size: 14px;
+    min-width: auto;
+  }
+  .dark-mode-toggle-wrapper {
+    order: 1;
+    margin-left: auto;
+  }
+}
+
+/* Dark mode */
+html.dark-mode {
+  background-color: #121212;
+  color: #e0e0e0;
+}
+
+html.dark-mode header {
+  background-color: #1f1f1f;
+  box-shadow: 0 2px 6px rgba(255,255,255,0.1);
+}
+
+html.dark-mode .nav-container {
+  background-color: #1f1f1f;
+}
+
+html.dark-mode .tab {
+  background-color: #333;
+  color: #ccc;
+}
+
+html.dark-mode .tab:hover {
+  background-color: #555;
+}
+
+html.dark-mode .tab.active {
+  background-color: #2980b9;
+  color: #fff;
+}
+
+html.dark-mode #darkModeToggle {
+  color: #e0e0e0;
+}
+
+html.dark-mode #darkModeToggle:hover {
+  color: #3498db;
+}
+
+/* Footer sticky en bas */
+footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 20px;
+  background-color: #fff;
+  box-shadow: 0 -2px 6px rgba(0,0,0,0.1);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 13px;
+  color: #2c3e50;
+  user-select: none;
+  z-index: 1000;
+}
+
+html.dark-mode footer {
+  background-color: #1f1f1f;
+  box-shadow: 0 -2px 6px rgba(255,255,255,0.1);
+  color: #e0e0e0;
+}
+
+/* Evite que le contenu soit caché sous le footer */
+main.content {
+  padding-bottom: 40px; /* même hauteur que footer */
+}

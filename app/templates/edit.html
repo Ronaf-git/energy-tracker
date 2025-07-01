@@ -1,0 +1,305 @@
+{% extends "base.html" %}
+
+{% block title %}Suivi Énergie - MonSite{% endblock %}
+
+{% block styles %}
+<style>
+    /* Scope ton CSS uniquement dans main.content pour ne pas affecter le header */
+    main.content {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #f7f9fc;
+        margin: 0;
+        padding: 20px;
+        max-width: 1200px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    main.content h1 {
+        text-align: center;
+        color: #007BFF;
+        font-size: 2.5em;
+        margin-bottom: 30px;
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+    }
+    main.content table {
+        border-collapse: collapse;
+        width: 100%;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        background-color: white;
+    }
+    main.content th, main.content td {
+        border: 1px solid #ccc;
+        padding: 10px;
+        text-align: center;
+        min-width: 100px;
+    }
+    main.content th {
+        background-color: #007BFF;
+        color: white;
+        user-select: none;
+    }
+    main.content td[contenteditable="true"] {
+        background-color: #fefefe;
+        transition: background-color 0.3s ease;
+    }
+    main.content td[contenteditable="true"]:focus {
+        background-color: #dbeeff;
+        outline: none;
+    }
+    main.content button, main.content .nav-links a {
+        margin-top: 20px;
+        padding: 12px 24px;
+        font-size: 16px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: background-color 0.25s ease;
+        text-decoration: none;
+        color: white;
+        display: inline-block;
+        text-align: center;
+    }
+    main.content button {
+        background-color: #28a745;
+    }
+    main.content button:hover {
+        background-color: #218838;
+    }
+    main.content .nav-links {
+        margin-top: 20px;
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+    }
+    main.content .nav-links a:first-child {
+        background-color: #4CAF50;
+    }
+    main.content .nav-links a:first-child:hover {
+        background-color: #3e8e41;
+    }
+    main.content .nav-links a:last-child {
+        background-color: #007BFF;
+    }
+    main.content .nav-links a:last-child:hover {
+        background-color: #0056b3;
+    }
+    main.content .nav-btn {
+        padding: 12px 24px;
+        font-size: 16px;
+        border-radius: 6px;
+        text-decoration: none;
+        color: white;
+        transition: background-color 0.25s ease;
+        text-align: center;
+    }
+    main.content .nav-btn:hover {
+        filter: brightness(0.9);
+    }
+    main.content .table-container {
+        max-height: 500px; /* Adjust height as needed */
+        overflow-y: auto;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        box-shadow: inset 0 0 4px rgba(0,0,0,0.05);
+        background-color: white;
+    }
+    main.content .delete-row-btn {
+        background-color: #dc3545;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        padding: 6px 10px;
+        cursor: pointer;
+        font-size: 14px;
+    }
+    main.content .delete-row-btn:hover {
+        background-color: #c82333;
+    }
+    main.content button, main.content .nav-btn {
+        min-width: 140px;
+        padding: 12px 24px;
+        font-size: 16px;
+        border-radius: 6px;
+        text-align: center;
+        color: white;
+        cursor: pointer;
+        user-select: none;
+        display: inline-flex;
+        justify-content: center;
+        align-items: center;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+    <form method="POST" id="editForm">
+        <div style="margin: 30px 0; display: flex; gap: 15px; justify-content: center; align-items: center; flex-wrap: nowrap;">
+            <button type="button" id="addRowBtn">➕ Ajouter une ligne</button>
+            <input type="hidden" name="table_data" id="tableDataInput" />
+            <button type="submit">💾 Enregistrer</button>
+        </div>
+
+        <div class="table-container">
+            <table id="editableTable" spellcheck="false">
+                <thead>
+                    <tr>
+                        {% for header in headers %}
+                            <th>{{ header }}</th>
+                        {% endfor %}
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in rows %}
+                        <tr>
+                            {% for header in headers %}
+                                <td contenteditable="true">{{ row[header] }}</td>
+                            {% endfor %}
+                            <td>
+                                <button type="button" class="delete-row-btn">🗑</button>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </form>
+
+<script>
+    // Champs injectés depuis le backend, exemple:
+    // const fields = [{ name: 'record_date', label: 'Date', type: 'date' }].concat([...]);
+    const fields = [{ name: 'record_date', label: 'Date', type: 'date' }].concat({{ fields | tojson | safe }});
+
+    const tbody = document.querySelector('#editableTable tbody');
+    const form = document.getElementById('editForm');
+    const input = document.getElementById('tableDataInput');
+    const addRowBtn = document.getElementById('addRowBtn');
+
+    // Applique les types sur chaque cellule
+    function applyDataTypes() {
+        tbody.querySelectorAll('tr').forEach(tr => {
+            tr.querySelectorAll('td').forEach((td, i) => {
+                td.dataset.type = fields[i]?.type || 'text'; // fallback à 'text' si pas défini
+            });
+        });
+    }
+
+    applyDataTypes();
+
+    // Place le curseur à la fin d'une cellule contenteditable
+    function placeCaretAtEnd(el) {
+        el.focus();
+        if (typeof window.getSelection != "undefined"
+            && typeof document.createRange != "undefined") {
+            var range = document.createRange();
+            range.selectNodeContents(el);
+            range.collapse(false);
+            var sel = window.getSelection();
+            sel.removeAllRanges();
+            sel.addRange(range);
+        }
+    }
+
+    // Validation en temps réel pour les nombres
+    tbody.addEventListener('input', e => {
+        const target = e.target;
+        if (target.tagName === 'TD' && target.isContentEditable) {
+            const type = target.dataset.type;
+            const val = target.innerText.trim();
+
+            if (type === 'number') {
+                // Autorise chiffres, point, virgule, signe moins uniquement
+                if (!/^[-\d.,]*$/.test(val)) {
+                    target.innerText = val.slice(0, -1);
+                    placeCaretAtEnd(target);
+                }
+            }
+            // Tu peux ajouter une validation date ici si besoin
+        }
+    });
+
+    // Ajout d'une nouvelle ligne
+    addRowBtn.addEventListener('click', () => {
+        const newRow = document.createElement('tr');
+
+        fields.forEach(() => {
+            const newCell = document.createElement('td');
+            newCell.contentEditable = "true";
+            newCell.innerText = '';
+            newRow.appendChild(newCell);
+        });
+
+        const deleteCell = document.createElement('td');
+        const deleteBtn = document.createElement('button');
+        deleteBtn.type = "button";
+        deleteBtn.textContent = "🗑";
+        deleteBtn.classList.add("delete-row-btn");
+        deleteCell.appendChild(deleteBtn);
+        newRow.appendChild(deleteCell);
+
+        tbody.appendChild(newRow);
+        applyDataTypes();
+        newRow.cells[0].focus();
+    });
+
+    // Suppression de la ligne via délégation d'événement
+    tbody.addEventListener('click', e => {
+        if (e.target.classList.contains('delete-row-btn')) {
+            const row = e.target.closest('tr');
+            if (row) {
+                row.remove();
+            }
+        }
+    });
+
+    // Validation stricte avant envoi
+    form.addEventListener('submit', function(e) {
+        // e.preventDefault();  
+        console.log('Submit détecté');
+        const rowsData = [];
+        let valid = true;
+
+        tbody.querySelectorAll('tr').forEach(tr => {
+            const rowObj = {};
+            tr.querySelectorAll('td').forEach((td, i) => {
+                // Ne traiter que les colonnes de données (pas la dernière)
+                if (i >= fields.length) return;
+
+                let val = td.innerText.trim();
+                const type = td.dataset.type;
+                const label = fields[i]?.label || `Colonne ${i+1}`;
+
+                if (type === 'number' && val !== '') {
+                    const numVal = parseFloat(val.replace(',', '.'));
+                    if (isNaN(numVal)) {
+                        alert(`Erreur : La valeur "${val}" dans la colonne "${label}" doit être un nombre.`);
+                        td.focus();
+                        valid = false;
+                        e.preventDefault();
+                        return;
+                    }
+                    rowObj[fields[i].name] = numVal;
+                } else if (type === 'date') {
+                    const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+                    if (!dateRegex.test(val)) {
+                        alert(`Erreur : La valeur "${val}" dans la colonne "${label}" doit être une date valide au format YYYY-MM-DD.`);
+                        td.focus();
+                        valid = false;
+                        e.preventDefault();
+                        return;
+                    }
+                    rowObj[fields[i].name] = val;
+                } else {
+                    rowObj[fields[i].name] = val;
+                }
+            });
+            if (valid) rowsData.push(rowObj);
+        });
+
+        if (!valid) return;
+
+        input.value = JSON.stringify(rowsData);
+        console.log("Données JSON à envoyer :", input.value); // <-- pour debug
+    });
+</script>
+{% endblock %}

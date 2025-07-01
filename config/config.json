@@ -1,6 +1,6 @@
 {
   "constants": {
-    "DATA_DIR": "data"
+    "PLACE_HOLDER": "data"
   },
   "fields": [
     { "name": "gaz", "label": "Gaz", "required": true, "type": "number" },

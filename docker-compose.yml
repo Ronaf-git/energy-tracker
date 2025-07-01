@@ -6,13 +6,7 @@ services:
     ports:
       - "6789:5000"
     volumes:
-      - /volume1/Drive/Documents Gestion Quotidienne/DB/Energie:/data
+      - ./data:/data
+      - ./config:/config
     restart: always
 
-volumes:
-  energy_data:
-    driver: local
-    driver_opts:
-      o: bind
-      type: none
-      device: ./data
