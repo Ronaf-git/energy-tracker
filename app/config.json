@@ -1,0 +1,12 @@
+{
+  "constants": {
+    "DATA_DIR": "data"
+  },
+  "fields": [
+    { "name": "gaz", "label": "Gaz", "required": true, "type": "number" },
+    { "name": "elect_jour", "label": "Électricité Jour", "required": true, "type": "number" },
+    { "name": "elect_nuit", "label": "Électricité Nuit", "required": true, "type": "number" },
+    { "name": "eau", "label": "Eau", "required": true, "type": "number" },
+    { "name": "comment", "label": "Commentaire", "type": "text", "required": false }
+  ]
+}

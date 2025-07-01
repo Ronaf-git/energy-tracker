@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
     <meta charset="UTF-8" />
-    <title>Energy Data</title>
+    <title>Reporting Energie</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -52,40 +52,43 @@
     </style>
 </head>
 <body>
-    <h1>Energy and Water Usage Data</h1>
+    <h1>Reporting Energétique</h1>
 
     <!-- 🔽 Interactive Form -->
     <form id="filterForm" method="get" action="/data">
-      <!-- Your inputs/selects here -->
-      <label for="start_date">Start Date:</label>
-      <input type="date" id="start_date" name="start_date" value="{{ request.args.get('start_date', '') }}">
+    <label for="start_date">De :</label>
+    <input type="date" id="start_date" name="start_date" value="{{ request.args.get('start_date', '') }}">
 
-      <label for="end_date">End Date:</label>
-      <input type="date" id="end_date" name="end_date" value="{{ request.args.get('end_date', '') }}">
+    <label for="end_date">À :</label>
+    <input type="date" id="end_date" name="end_date" value="{{ request.args.get('end_date', '') }}">
 
-      <label for="data_type">Data Type:</label>
-      <select id="data_type" name="data_type">
+    <label for="data_type">Energie</label>
+    <select id="data_type" name="data_type">
         <option value="all" {% if request.args.get('data_type') == 'all' or not request.args.get('data_type') %}selected{% endif %}>All</option>
-        <option value="gaz" {% if request.args.get('data_type') == 'gaz' %}selected{% endif %}>Gaz</option>
-        <option value="elect_jour" {% if request.args.get('data_type') == 'elect_jour' %}selected{% endif %}>Electricité Jour</option>
-        <option value="elect_nuit" {% if request.args.get('data_type') == 'elect_nuit' %}selected{% endif %}>Electricité Nuit</option>
-        <option value="eau" {% if request.args.get('data_type') == 'eau' %}selected{% endif %}>Eau</option>
-      </select>
+        {% for field in fields %}
+        {% if field.type == 'number' %}
+            <option value="{{ field.name }}" 
+            {% if request.args.get('data_type') == field.name %}selected{% endif %}>
+            {{ field.name.replace('_', ' ').capitalize() }}
+            </option>
+        {% endif %}
+        {% endfor %}
+    </select>
 
-      <label for="view">View By:</label>
-      <select id="view" name="view">
-        <option value="daily" {% if request.args.get('view') == 'daily' %}selected{% endif %}>Daily</option>
-        <option value="weekly" {% if request.args.get('view') == 'weekly' %}selected{% endif %}>Weekly</option>
-        <option value="monthly" {% if request.args.get('view') == 'monthly' %}selected{% endif %}>Monthly</option>
-        <option value="yearly" {% if request.args.get('view') == 'yearly' %}selected{% endif %}>Yearly</option>
-      </select>
+    <label for="view">Voir par</label>
+    <select id="view" name="view">
+        <option value="daily" {% if request.args.get('view') == 'daily' %}selected{% endif %}>Jour</option>
+        <option value="weekly" {% if request.args.get('view') == 'weekly' %}selected{% endif %}>Semaine</option>
+        <option value="monthly" {% if request.args.get('view') == 'monthly' %}selected{% endif %}>Mois</option>
+        <option value="yearly" {% if request.args.get('view') == 'yearly' %}selected{% endif %}>Année</option>
+    </select>
     </form>
 
     <div class="button-container">
-        <a href="/" class="back-button">Back to Submit Data</a>
+        <a href="/" class="back-button">Retour à l'encodage</a>
     </div>
 
-    <h2>Usage Plot</h2>
+    <h2>Graphe</h2>
     <img src="data:image/png;base64,{{ plot_url }}" alt="Energy Usage Plot">
 
     <h2>Data Table</h2>

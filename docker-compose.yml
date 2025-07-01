@@ -15,4 +15,4 @@ volumes:
     driver_opts:
       o: bind
       type: none
-      device: ./energy_data
+      device: ./data
