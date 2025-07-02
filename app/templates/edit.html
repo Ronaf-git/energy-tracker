@@ -222,10 +222,11 @@
     addRowBtn.addEventListener('click', () => {
         const newRow = document.createElement('tr');
 
-        fields.forEach(() => {
+        fields.forEach((field, i) => {
             const newCell = document.createElement('td');
             newCell.contentEditable = "true";
-            newCell.innerText = '';
+            newCell.dataset.type = field.type;
+            newCell.innerText = '';  // Start empty
             newRow.appendChild(newCell);
         });
 
@@ -239,8 +240,9 @@
 
         tbody.appendChild(newRow);
         applyDataTypes();
-        newRow.cells[0].focus();
+        newRow.cells[0]?.focus();  // Focus first cell
     });
+
 
     // Suppression de la ligne via délégation d'événement
     tbody.addEventListener('click', e => {
@@ -254,20 +256,21 @@
 
     // Validation stricte avant envoi
     form.addEventListener('submit', function(e) {
-        // e.preventDefault();  
         console.log('Submit détecté');
         const rowsData = [];
+        const datesSeen = new Set();
         let valid = true;
 
         tbody.querySelectorAll('tr').forEach(tr => {
             const rowObj = {};
-            tr.querySelectorAll('td').forEach((td, i) => {
-                // Ne traiter que les colonnes de données (pas la dernière)
-                if (i >= fields.length) return;
+            const cells = tr.querySelectorAll('td');
 
-                let val = td.innerText.trim();
+            for (let i = 0; i < fields.length; i++) {
+                const td = cells[i];
+                const val = td.innerText.trim();
                 const type = td.dataset.type;
-                const label = fields[i]?.label || `Colonne ${i+1}`;
+                const label = fields[i]?.label || `Colonne ${i + 1}`;
+                const name = fields[i]?.name;
 
                 if (type === 'number' && val !== '') {
                     const numVal = parseFloat(val.replace(',', '.'));
@@ -278,7 +281,7 @@
                         e.preventDefault();
                         return;
                     }
-                    rowObj[fields[i].name] = numVal;
+                    rowObj[name] = numVal;
                 } else if (type === 'date') {
                     const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
                     if (!dateRegex.test(val)) {
@@ -288,18 +291,31 @@
                         e.preventDefault();
                         return;
                     }
-                    rowObj[fields[i].name] = val;
+                    if (datesSeen.has(val)) {
+                        alert(`Erreur : La date "${val}" est en double. Chaque ligne doit avoir une date unique.`);
+                        td.focus();
+                        valid = false;
+                        e.preventDefault();
+                        return;
+                    }
+                    datesSeen.add(val);
+                    rowObj[name] = val;
                 } else {
-                    rowObj[fields[i].name] = val;
+                    rowObj[name] = val;
                 }
-            });
-            if (valid) rowsData.push(rowObj);
+            }
+
+            if (valid) {
+                rowsData.push(rowObj);
+            }
         });
 
         if (!valid) return;
 
         input.value = JSON.stringify(rowsData);
-        console.log("Données JSON à envoyer :", input.value); // <-- pour debug
+        console.log("Données JSON à envoyer :", input.value);
     });
+
+
 </script>
 {% endblock %}

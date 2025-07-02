@@ -128,29 +128,33 @@ def init_db():
 def update_csv(today, **data):
     rows = []
     found = False
-
-    # Ensure record_date is added
     data['record_date'] = today
-
-    # Define all fieldnames including 'record_date'
-    fieldnames = ['record_date'] + FIELD_NAMES
+    original_fieldnames = set(data.keys())  # Will be updated with full field list
 
     # Read existing CSV if it exists
     if os.path.exists(CSV_PATH):
-        with open(CSV_PATH, 'r', newline='') as f:
+        with open(CSV_PATH, 'r', newline='', encoding='utf-8') as f:
             reader = csv.DictReader(f)
+            original_fieldnames.update(reader.fieldnames or [])
             for row in reader:
                 if row['record_date'] == today:
-                    row.update({k: data.get(k) for k in FIELD_NAMES})
+                    # Only update fields in FIELD_NAMES
+                    for field in FIELD_NAMES:
+                        if field in data:
+                            row[field] = data[field]
                     found = True
                 rows.append(row)
 
-    # If today's entry wasn't found, append a new one
     if not found:
-        rows.append(data)
+        # If new row, fill all known fields (others will remain empty)
+        row = {key: '' for key in original_fieldnames}
+        row.update(data)
+        rows.append(row)
 
-    # Write the updated rows back to the CSV
-    with open(CSV_PATH, 'w', newline='') as f:
+    # Ensure consistent field order
+    fieldnames = list(dict.fromkeys(['record_date'] + FIELD_NAMES + list(original_fieldnames)))
+
+    with open(CSV_PATH, 'w', newline='', encoding='utf-8') as f:
         writer = csv.DictWriter(f, fieldnames=fieldnames)
         writer.writeheader()
         writer.writerows(rows)
@@ -258,37 +262,50 @@ def edit_csv():
     if not os.path.exists(CSV_PATH):
         return "CSV file not found."
 
+    import json
+
     if request.method == 'POST':
         updated_data = request.form.get('table_data')
-        print("Données reçues :", updated_data)  # Debug : vérifie ce qui est reçu
-
         if not updated_data:
             return "No data submitted."
 
         try:
-            import json
-            rows = json.loads(updated_data)
-            print("Données JSON parsées :", rows)  # Debug : affiche la liste de dicts
+            updated_rows = json.loads(updated_data)
+            print("Données JSON parsées :", updated_rows)
 
-            if rows:
-                with open(CSV_PATH, 'w', newline='', encoding='utf-8') as f:
-                    writer = csv.DictWriter(f, fieldnames=rows[0].keys())
-                    writer.writeheader()
-                    writer.writerows(rows)
-                print("CSV réécrit avec succès.")
-            else:
-                print("Liste vide reçue, fichier CSV non modifié.")
+            # Load original full data (to preserve untouched fields)
+            with open(CSV_PATH, newline='', encoding='utf-8') as f:
+                reader = csv.DictReader(f)
+                original_rows = list(reader)
+                original_headers = reader.fieldnames or []
 
+            merged_rows = []
+            for i, updated_row in enumerate(updated_rows):
+                original_row = original_rows[i] if i < len(original_rows) else {}
+                merged_row = original_row.copy()
+                merged_row.update(updated_row)  # Overwrite only the updated fields
+                merged_rows.append(merged_row)
+
+            with open(CSV_PATH, 'w', newline='', encoding='utf-8') as f:
+                writer = csv.DictWriter(f, fieldnames=original_headers)
+                writer.writeheader()
+                writer.writerows(merged_rows)
+
+            print("CSV mis à jour avec conservation des champs supprimés.")
         except Exception as e:
             return f"Failed to save: {e}"
 
         return redirect(url_for('edit_csv'))
 
-    # GET request: load data
+    # GET request
     with open(CSV_PATH, newline='', encoding='utf-8') as f:
         reader = csv.DictReader(f)
         rows = list(reader)
+        original_headers = reader.fieldnames or []
+
+        # Only show fields you want to edit
         headers = ['record_date'] + FIELD_NAMES
+        headers = [h for h in headers if h in original_headers]
 
     return render_template("edit.html", headers=headers, rows=rows, fields=FIELDS)
 
