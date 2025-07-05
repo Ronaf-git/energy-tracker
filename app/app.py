@@ -215,7 +215,7 @@ def show_data():
     plt.xticks(rotation=45)
     plt.xlabel('Date')
     plt.ylabel('Unité d\'œuvre')
-    plt.title(f'Variation en {data_type} - ({request.args.get("view", "daily").capitalize()})')
+    plt.title(f'Variation ({request.args.get("view", "daily").capitalize()})')
     plt.legend()
     plt.tight_layout()
 
