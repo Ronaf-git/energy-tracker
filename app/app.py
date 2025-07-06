@@ -195,7 +195,7 @@ def index():
 
         update_csv(today, **values)
 
-    return render_template('form.html', fields=FIELDS)
+    return render_template('form.html', success=True, fields=FIELDS)
 
 @app.route('/data')
 def show_data():

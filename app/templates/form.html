@@ -89,6 +89,30 @@
         background-color: #5a6268;
     }
 
+    .toast {
+        visibility: hidden;
+        min-width: 250px;
+        background-color: #28a745;
+        color: white;
+        text-align: center;
+        border-radius: 8px;
+        padding: 16px;
+        position: fixed;
+        z-index: 1000;
+        left: 50%;
+        bottom: 30px;
+        transform: translateX(-50%);
+        font-size: 16px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        opacity: 0;
+        transition: opacity 0.5s ease, visibility 0.5s;
+    }
+
+    .toast.show {
+        visibility: visible;
+        opacity: 1;
+    }   
+
     @media (max-width: 600px) {
         main {
             padding: 10px;
@@ -114,6 +138,25 @@
 <div class="form-container">
     <h1>Encodage des compteurs</h1>
     <form method="POST">
+        <div id="toast" class="toast">Données envoyées avec succès!</div>
+        <script>
+            // Show toast if flag exists
+            window.addEventListener('DOMContentLoaded', () => {
+                const toast = document.getElementById('toast');
+                if (localStorage.getItem('formToast') === 'true') {
+                    toast.classList.add('show');
+                    setTimeout(() => {
+                        toast.classList.remove('show');
+                    }, 3000);
+                    localStorage.removeItem('formToast');
+                }
+            });
+
+            // Set the flag just before form is submitted
+            document.querySelector('form').addEventListener('submit', () => {
+                localStorage.setItem('formToast', 'true');
+            });
+        </script>
         <fieldset>
             <label for="record_date">Date:</label>
             <input type="date" id="record_date" name="record_date" value="{{ default_date }}">

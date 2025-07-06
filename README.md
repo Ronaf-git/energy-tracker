@@ -79,18 +79,20 @@ Vous pouvez utiliser l'application de deux manières :
 
 1. Cloner le dépôt :
 
-```
+```bash
 git clone https://github.com/Ronaf-git/energy-tracker
+
 cd energy-tracker
 ```
 
 2. Installer les dépendances :
 ```
-pip install -r requirements.txt
+py -m pip install -r requirements.txt
 ```
 3. Lancer l'application :
-```
-python app.py
+```bash
+cd app
+py app.py
 ```
 L'application sera accessible sur http://localhost:5000
 
@@ -98,7 +100,7 @@ L'application sera accessible sur http://localhost:5000
 #### 2. Installation avec Docker
 
 1. Cloner le dépôt :
-```
+```bash
 git clone https://github.com/Ronaf-git/energy-tracker
 cd energy-tracker
 ```
