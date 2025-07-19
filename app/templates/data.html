@@ -41,11 +41,10 @@
 
 <div class="button-container">
     <form method="get" action="/download_xlsx">
-        <input type="hidden" name="start_date" value="{{ request.args.get('start_date', '') }}">
-        <input type="hidden" name="end_date" value="{{ request.args.get('end_date', '') }}">
-        <input type="hidden" name="data_type" value="{{ request.args.get('data_type', '') }}">
-        <input type="hidden" name="view" value="{{ request.args.get('view', '') }}">
-        <button type="submit" class="back-button" style="background-color: #f39c12;">Télécharger en XLSX</button>
+        <input type="hidden" name="token" value="{{ download_token }}">
+        <button type="submit" class="back-button" style="background-color: #f39c12;">
+            Télécharger en XLSX
+        </button>
     </form>
 </div>
 

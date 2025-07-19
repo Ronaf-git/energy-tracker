@@ -8,6 +8,8 @@ import matplotlib.pyplot as plt
 import io
 import base64
 import json
+import uuid
+
 
 # Load config
 CONFIG_PATH = os.path.join(os.path.dirname(__file__), "..", "config", "config.json")
@@ -23,6 +25,7 @@ DB_PATH = os.path.join(DATA_DIR, "energy.db")
 CSV_PATH = os.path.join(DATA_DIR, "energy.csv")
 
 app = Flask(__name__)
+data_cache = {}  # simple in-memory cache (can be replaced with Redis or Flask-Caching)
 
 def get_filtered_resampled_data():
     if not os.path.exists(CSV_PATH):
@@ -203,6 +206,10 @@ def show_data():
     if error:
         return error
 
+    #return dataset as token for download
+    token = str(uuid.uuid4())
+    data_cache[token] = df_diff.copy()
+
     # Plotting logic...
     plt.figure(figsize=(10, 6))
     data_type = request.args.get('data_type', 'all')
@@ -231,25 +238,23 @@ def show_data():
         'data.html',
         tables=[df_diff.reset_index().to_html(classes='data', index=False)],
         plot_url=plot_url,
-        fields=FIELDS
+        fields=FIELDS,
+        download_token=token
     )
 
 @app.route('/download_xlsx')
 def download_xlsx():
-    df_diff, error = get_filtered_resampled_data()
-    if error:
-        return error
-    
-    # Check and fix dtypes
-    for col in df_diff.columns:
-        if df_diff[col].dtype == 'object':
-            df_diff[col] = df_diff[col].astype(str)
+    token = request.args.get('token')
 
+    if not token or token not in data_cache:
+        return "Invalid or expired download token", 400
+    
+    df = data_cache.get(token)  # pop method if i want to delete my token after download
     output = io.BytesIO()
     with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
-        df_diff.reset_index().to_excel(writer, sheet_name='Data', index=False)
-
+        df.to_excel(writer, index=True, sheet_name='Données') #I keep my index to keep the date
     output.seek(0)
+
     return send_file(
         output,
         as_attachment=True,
