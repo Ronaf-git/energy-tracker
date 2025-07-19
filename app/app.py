@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, send_file
+from flask import Flask, render_template, request, redirect, url_for, send_file , get_flashed_messages ,flash
 import sqlite3
 from datetime import date
 import os
@@ -25,11 +25,21 @@ DB_PATH = os.path.join(DATA_DIR, "energy.db")
 CSV_PATH = os.path.join(DATA_DIR, "energy.csv")
 
 app = Flask(__name__)
+app.secret_key = os.urandom(24)
 data_cache = {}  # simple in-memory cache (can be replaced with Redis or Flask-Caching)
+
+def create_blank_csv():
+    print(CONFIG)
+    print(FIELD_NAMES)
+    headers = ['record_date'] + FIELD_NAMES
+    with open(CSV_PATH, 'w', newline='', encoding='utf-8') as f:
+        writer = csv.DictWriter(f, fieldnames=headers)
+        writer.writeheader()
 
 def get_filtered_resampled_data():
     if not os.path.exists(CSV_PATH):
-        return None, "No data available."
+        create_blank_csv()
+        return None, "Blank CSV file created. Please enter some data first."
 
     # Load CSV
     with open(CSV_PATH, 'r', newline='') as f:
@@ -38,12 +48,15 @@ def get_filtered_resampled_data():
         delimiter = csv.Sniffer().sniff(sample).delimiter
     df = pd.read_csv(CSV_PATH, delimiter=delimiter)
 
+    if df.empty:
+        return None,"No data available. Please enter at least one row."
+
     if 'record_date' not in df.columns:
         return None, "CSV missing 'record_date' column."
 
     df['record_date'] = pd.to_datetime(df['record_date'], errors='coerce')
     df = df.dropna(subset=['record_date'])
-    df = df.sort_values('record_date')
+    df = df.sort_values('record_date').reset_index(drop=True)
     df.set_index('record_date', inplace=True)
 
     # Filter numeric fields
@@ -164,6 +177,9 @@ def update_csv(today, **data):
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
+    messages = get_flashed_messages()
+    message = messages[0] if messages else None
+
     if request.method == 'POST':
         # Get 'record_date' from form, default to today if missing or empty
         today = request.form.get('record_date')
@@ -197,14 +213,16 @@ def index():
             """
 
         update_csv(today, **values)
+        return render_template('form.html', success=True, fields=FIELDS, message="Données envoyées avec succès!")
 
-    return render_template('form.html', success=True, fields=FIELDS)
+    return render_template('form.html', success=False, fields=FIELDS, message=message, default_date=date.today().isoformat())
 
 @app.route('/data')
 def show_data():
     df_diff, error = get_filtered_resampled_data()
     if error:
-        return error
+        flash(error)
+        return redirect(url_for('index'))
 
     #return dataset as token for download
     token = str(uuid.uuid4())
@@ -265,7 +283,7 @@ def download_xlsx():
 @app.route('/edit', methods=['GET', 'POST'])
 def edit_csv():
     if not os.path.exists(CSV_PATH):
-        return "CSV file not found."
+        create_blank_csv()
 
     import json
 
@@ -319,4 +337,4 @@ if __name__ == '__main__':
     
     os.makedirs(DATA_DIR, exist_ok=True)
     # init_db()
-    app.run(host='0.0.0.0', port=5000)
+    app.run(host='0.0.0.0', port=8080)

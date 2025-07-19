@@ -1,11 +1,11 @@
 document.addEventListener('DOMContentLoaded', () => {
     const toast = document.getElementById('toast');
-    if (localStorage.getItem('formToast') === 'true') {
+    if (toast && toast.textContent.trim() !== "") {
         toast.classList.add('show');
         setTimeout(() => {
             toast.classList.remove('show');
+            toast.textContent = ""; // clear toast after hide
         }, 3000);
-        localStorage.removeItem('formToast');
     }
 });
 

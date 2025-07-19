@@ -9,8 +9,13 @@
 {% block content %}
 <div class="form-container">
     <h1>Encodage des compteurs</h1>
+
+    {% if message %}
+        <div id="toast" class="toast">{{ message }}</div>
+    {% endif %}
+    
     <form method="POST">
-        <div id="toast" class="toast">Données envoyées avec succès!</div>
+
 
         <fieldset>
             <label for="record_date">Date:</label>

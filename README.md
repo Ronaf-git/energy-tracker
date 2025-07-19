@@ -94,7 +94,7 @@ py -m pip install -r requirements.txt
 cd app
 py app.py
 ```
-L'application sera accessible sur http://localhost:5000
+L'application sera accessible sur http://localhost:8080
 
 
 #### 2. Installation avec Docker
@@ -112,7 +112,7 @@ services:
     image: energy-tracker-energy_app:latest
     build: .
     ports:
-      - "5000:5000"
+      - "VOTRE_PORT:8080"
     volumes:
       - VOTRE_DOSSIER_DATA:/data
       - VOTRE_DOSSIER_CONFIG:/config
@@ -129,7 +129,7 @@ docker-compose up -d
 ```
 5. Accéder à l'application dans votre navigateur :
 
-http://localhost:5000
+http://localhost:8080
 ou VOTRE_IP:LE_PORT_EXPOSE
  
 ## Description des routes

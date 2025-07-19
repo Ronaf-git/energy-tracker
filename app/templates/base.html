@@ -3,6 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <title>{% block title %}MonSite{% endblock %}</title>
+  <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='images/logo.png') }}">
+
 
   <!-- Script inline pour appliquer le dark mode dès le début -->
     <script src="{{ url_for('static', filename='js/base.js') }}"></script>
