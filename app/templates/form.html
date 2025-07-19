@@ -3,135 +3,7 @@
 {% block title %}Suivi Énergie - Encodage{% endblock %}
 
 {% block styles %}
-<style>
-    main {
-        width: 100%;
-        max-width: 450px;
-        padding: 20px;
-        margin: 0 auto;
-    }
-
-    .form-container {
-        background-color: #fff;
-        padding: 30px;
-        border-radius: 10px;
-        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
-    }
-
-    h1 {
-        text-align: center;
-        color: #222;
-        margin-bottom: 25px;
-        font-size: 1.8em;
-    }
-
-    fieldset {
-        border: none;
-        padding: 0;
-        margin: 0 0 20px 0;
-    }
-
-    label {
-        display: block;
-        margin-bottom: 10px;
-        font-weight: 500;
-        color: #444;
-    }
-
-    input[type="number"],
-    input[type="date"],
-    textarea {
-        width: 100%;
-        padding: 10px;
-        border: 1px solid #ccc;
-        border-radius: 6px;
-        font-size: 1em;
-        box-sizing: border-box;
-        margin-bottom: 20px;
-        font-family: inherit;
-    }
-
-    textarea {
-        resize: vertical;
-    }
-
-    button {
-        width: 100%;
-        padding: 12px;
-        background-color: #007BFF;
-        color: white;
-        border: none;
-        border-radius: 6px;
-        font-size: 16px;
-        cursor: pointer;
-        transition: background-color 0.2s ease-in-out;
-    }
-
-    button:hover {
-        background-color: #0056b3;
-    }
-
-    .view-data {
-        text-align: center;
-        margin-top: 20px;
-    }
-
-    .view-data form {
-        display: inline-block;
-        width: 100%;
-    }
-
-    .view-data button {
-        background-color: #6c757d;
-    }
-
-    .view-data button:hover {
-        background-color: #5a6268;
-    }
-
-    .toast {
-        visibility: hidden;
-        min-width: 250px;
-        background-color: #28a745;
-        color: white;
-        text-align: center;
-        border-radius: 8px;
-        padding: 16px;
-        position: fixed;
-        z-index: 1000;
-        left: 50%;
-        bottom: 30px;
-        transform: translateX(-50%);
-        font-size: 16px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        opacity: 0;
-        transition: opacity 0.5s ease, visibility 0.5s;
-    }
-
-    .toast.show {
-        visibility: visible;
-        opacity: 1;
-    }   
-
-    @media (max-width: 600px) {
-        main {
-            padding: 10px;
-        }
-
-        .form-container {
-            padding: 20px;
-        }
-
-        h1 {
-            font-size: 1.5em;
-        }
-
-        button {
-            font-size: 15px;
-            padding: 10px;
-        }
-    }
-</style>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/form.css') }}">
 {% endblock %}
 
 {% block content %}
@@ -139,24 +11,7 @@
     <h1>Encodage des compteurs</h1>
     <form method="POST">
         <div id="toast" class="toast">Données envoyées avec succès!</div>
-        <script>
-            // Show toast if flag exists
-            window.addEventListener('DOMContentLoaded', () => {
-                const toast = document.getElementById('toast');
-                if (localStorage.getItem('formToast') === 'true') {
-                    toast.classList.add('show');
-                    setTimeout(() => {
-                        toast.classList.remove('show');
-                    }, 3000);
-                    localStorage.removeItem('formToast');
-                }
-            });
 
-            // Set the flag just before form is submitted
-            document.querySelector('form').addEventListener('submit', () => {
-                localStorage.setItem('formToast', 'true');
-            });
-        </script>
         <fieldset>
             <label for="record_date">Date:</label>
             <input type="date" id="record_date" name="record_date" value="{{ default_date }}">
@@ -175,4 +30,8 @@
         <button type="submit">Envoi</button>
     </form>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/form.js') }}"></script>
 {% endblock %}

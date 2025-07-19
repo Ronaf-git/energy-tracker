@@ -3,59 +3,7 @@
 {% block title %}Suivi Énergie - Reporting{% endblock %}
 
 {% block styles %}
-<style>
-    main.content {
-        font-family: Arial, sans-serif;
-        text-align: center;
-        overflow-x: hidden;
-        max-width: 1200px;
-        margin: 0 auto;
-        padding: 0 20px;
-    }
-    table.data {
-        border-collapse: collapse;
-        width: 100%;
-        margin-bottom: 30px;
-    }
-    table.data th, table.data td {
-        border: 1px solid #ddd;
-        padding: 8px;
-        text-align: center;
-    }
-    table.data th {
-        background-color: #007BFF;
-        color: white;
-    }
-
-    main.content img {
-        max-width: 90%;
-        height: auto;
-        margin-top: 20px;
-    }
-
-    .button-container {
-        margin-top: 30px;
-    }
-    .back-button {
-        padding: 10px 20px;
-        font-size: 16px;
-        background-color: #4CAF50;
-        color: white;
-        border: none;
-        cursor: pointer;
-        border-radius: 5px;
-        text-decoration: none;
-    }
-    .back-button:hover {
-        background-color: #45a049;
-    }
-    form {
-        margin: 20px 0;
-    }
-    label, input, select {
-        margin: 0 10px;
-    }
-</style>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/data.css') }}">
 {% endblock %}
 
 {% block content %}
@@ -100,17 +48,12 @@
         <button type="submit" class="back-button" style="background-color: #f39c12;">Télécharger en XLSX</button>
     </form>
 </div>
+
 {% for table in tables %}
     {{ table | safe }}
 {% endfor %}
+{% endblock %}
 
-<script>
-  const form = document.getElementById('filterForm');
-
-  form.querySelectorAll('input, select').forEach(element => {
-    element.addEventListener('change', () => {
-      form.submit();
-    });
-  });
-</script>
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/data.js') }}"></script>
 {% endblock %}

@@ -5,19 +5,11 @@
   <title>{% block title %}MonSite{% endblock %}</title>
 
   <!-- Script inline pour appliquer le dark mode dès le début -->
-    <script>
-    (function() {
-        const html = document.documentElement;
-        if (localStorage.getItem('darkMode') === 'enabled') {
-        html.classList.add('dark-mode');
-        }
-        // On ajoute cette classe pour afficher la page seulement après avoir appliqué dark-mode
-        html.classList.add('js-ready');
-    })();
-    </script>
+    <script src="{{ url_for('static', filename='js/base.js') }}"></script>
 
 
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
   {% block styles %}{% endblock %}
 </head>
 <body>
@@ -53,28 +45,6 @@
         &copy; 2025 Ronaf. Tous droits réservés.
     </footer>
 
-    <script>
-        const toggle = document.getElementById('darkModeToggle');
-        const html = document.documentElement;
-
-        // Initialise le texte du bouton selon la classe appliquée
-        if (html.classList.contains('dark-mode')) {
-            toggle.textContent = '☀️';
-        } else {
-            toggle.textContent = '🌙';
-        }
-
-        toggle.addEventListener('click', () => {
-            html.classList.toggle('dark-mode');
-            if (html.classList.contains('dark-mode')) {
-                toggle.textContent = '☀️';
-                localStorage.setItem('darkMode', 'enabled');
-            } else {
-                toggle.textContent = '🌙';
-                localStorage.setItem('darkMode', 'disabled');
-            }
-        });
-    </script>
-
+    {% block scripts %}{% endblock %} 
 </body>
 </html>
