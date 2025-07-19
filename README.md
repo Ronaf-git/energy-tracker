@@ -24,7 +24,7 @@ project_root/
 ├── config/
 │   └── config.json          # Configuration des champs et paramètres
 ├── data/
-│   ├── energy.csv           # Fichier CSV des données énergétiques
+│   ├── energy.csv           # Fichier CSV des données énergétiques (exemple, peut être supprimé au profit de vos données)
 │   └── energy.db            # Base SQLite (non utilisée dans la version actuelle)
 ├── templates/
 │   ├── base.html            # Template HTML
@@ -33,6 +33,10 @@ project_root/
 │   └── edit.html            # Interface d'édition CSV
 └── static/                  # Fichiers statiques (CSS, JS, images)
 ```
+**Remarque :**  
+Le fichier `data/energy.csv` fourni est un **exemple de données** servant à la démonstration.  
+Il peut être **supprimé** sans impact avant une première utilisation réelle. 
+Un nouveau fichier CSV sera alors créé selon vos configurations, lors de l'utilisation de l'application. 
 
 
 
