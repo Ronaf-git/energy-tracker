@@ -59,3 +59,20 @@ input,
 select {
     margin: 0 10px;
 }
+
+.kpi-box {
+  padding: 10px;
+  margin: 10px;
+  border-radius: 8px;
+  color: white; /* Text always white */
+  width: 200px;
+  display: inline-block;
+}
+
+.kpi-box.green {
+  background-color: #4CAF50; /* green for improvement */
+}
+
+.kpi-box.red {
+  background-color: #f44336; /* red for worse */
+}

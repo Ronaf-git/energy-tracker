@@ -31,13 +31,35 @@
     <label for="view">Voir par</label>
     <select id="view" name="view">
         <option value="daily" {% if request.args.get('view') == 'daily' %}selected{% endif %}>Jour</option>
-        <option value="weekly" {% if request.args.get('view') == 'weekly' %}selected{% endif %}>Semaine</option>
+        <option value="weekly" {% if request.args.get('view') == 'weekly'  or request.args.get('view') is none %}selected{% endif %}>Semaine</option>
         <option value="monthly" {% if request.args.get('view') == 'monthly' %}selected{% endif %}>Mois</option>
         <option value="yearly" {% if request.args.get('view') == 'yearly' %}selected{% endif %}>Année</option>
     </select>
 </form>
 
+<!-- KPIs -->
+<div class="kpis">
+  {% for kpi in kpis %}
+    <div class="kpi-box {% if kpi.delta_vs_avg < 0 %}green{% else %}red{% endif %}">
+      <strong>{{ kpi.typeNRJ }}</strong><br>
+      Courant : {{ kpi.current | round(2) }}<br>
+      Moy. mobile : {{ kpi.avg | round(2) }}<br>
+      Écart : {{ kpi.delta_vs_avg | round(2) }} ({{ kpi.delta_vs_avg_pct | round(1) }}%)
+    </div>
+  {% endfor %}
+</div>
+
+<!-- Plot -->
 <img src="data:image/png;base64,{{ plot_url }}" alt="Energy Usage Plot">
+
+<!-- Pivot -->
+<h2>Résumé</h2>
+<div>
+  {{ pivot_table | safe }}
+</div>
+
+
+
 
 <div class="button-container">
     <form method="get" action="/download_xlsx">

@@ -22,7 +22,7 @@ def get_all_entries(table_name = "energy_usage", order_by = "record_date"):
         cur.execute(f"SELECT * FROM {table_name} ORDER BY {order_by} ASC")
         return cur.fetchall(), [desc[0] for desc in cur.description]
 
-def export_table_to_csv(table_name = "energy_usage", csv_file_path = "energy.csv"):
+def export_table_to_csv(table_name = "energy_usage", csv_file_path = "data/energy.csv"):
     with get_db() as conn:
         cursor = conn.cursor()
         cursor.execute(f"SELECT * FROM {table_name}")
