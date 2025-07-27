@@ -1,21 +1,19 @@
 from flask import Flask, render_template, request, redirect, url_for, send_file , get_flashed_messages ,flash
-import sqlite3
 from datetime import date
 import os
-import csv
 import pandas as pd
 import matplotlib.pyplot as plt
 import io
 import base64
 import json
 import uuid
-
+from db.schema import init_db
+from db.crud import get_all_entries, upsert_entry,export_table_to_csv,delete_entry
 
 # Load config
 CONFIG_PATH = os.path.join(os.path.dirname(__file__), "..", "config", "config.json")
 with open(CONFIG_PATH, encoding='utf-8') as f:
     CONFIG = json.load(f)
-
 
 # Extract constants and fields
 DATA_DIR = os.path.join(os.path.dirname(__file__), "..", "data") 
@@ -26,33 +24,14 @@ CSV_PATH = os.path.join(DATA_DIR, "energy.csv")
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
-data_cache = {}  # simple in-memory cache (can be replaced with Redis or Flask-Caching)
-
-def create_blank_csv():
-    print(CONFIG)
-    print(FIELD_NAMES)
-    headers = ['record_date'] + FIELD_NAMES
-    with open(CSV_PATH, 'w', newline='', encoding='utf-8') as f:
-        writer = csv.DictWriter(f, fieldnames=headers)
-        writer.writeheader()
+data_cache = {}  
 
 def get_filtered_resampled_data():
-    if not os.path.exists(CSV_PATH):
-        create_blank_csv()
-        return None, "Blank CSV file created. Please enter some data first."
-
-    # Load CSV
-    with open(CSV_PATH, 'r', newline='') as f:
-        sample = f.read(1024)
-        f.seek(0)
-        delimiter = csv.Sniffer().sniff(sample).delimiter
-    df = pd.read_csv(CSV_PATH, delimiter=delimiter)
+    rows, columns = get_all_entries()
+    df = pd.DataFrame(rows, columns=columns)
 
     if df.empty:
         return None,"No data available. Please enter at least one row."
-
-    if 'record_date' not in df.columns:
-        return None, "CSV missing 'record_date' column."
 
     df['record_date'] = pd.to_datetime(df['record_date'], errors='coerce')
     df = df.dropna(subset=['record_date'])
@@ -96,84 +75,7 @@ def sanitize_number(value):
     if value:
         return float(value.replace(',', '.'))
     return None
-"""
-def init_db():
-    with sqlite3.connect(DB_PATH) as conn:
-        c = conn.cursor()
 
-        # Define base columns that always exist (e.g. record_date)
-        base_columns = {
-            'record_date': 'TEXT PRIMARY KEY',
-        }
-
-        # Map your JSON field types to SQL types:
-        type_map = {
-            'number': 'REAL',
-            'text': 'TEXT',
-            # add more if needed
-        }
-
-        # Combine base + fields from JSON for creating the table
-        all_columns = dict(base_columns)  # start with base
-        for f in FIELDS:
-            col_name = f['name']
-            sql_type = type_map.get(f.get('type', 'number'), 'TEXT')
-            # comment fields are probably text, options likely numbers, etc
-            all_columns[col_name] = sql_type
-
-        # Build CREATE TABLE statement dynamically
-        cols_sql = ',\n    '.join(f"{col} {typ}" for col, typ in all_columns.items())
-        create_table_sql = f"CREATE TABLE IF NOT EXISTS energy_usage (\n    {cols_sql}\n)"
-
-        c.execute(create_table_sql)
-        conn.commit()
-
-        # Now, check if any columns are missing (in case table existed before)
-        c.execute("PRAGMA table_info(energy_usage)")
-        existing_cols = {row[1] for row in c.fetchall()}
-
-        # Add missing columns
-        for col, typ in all_columns.items():
-            if col not in existing_cols:
-                alter_sql = f"ALTER TABLE energy_usage ADD COLUMN {col} {typ}"
-                c.execute(alter_sql)
-                print(f"Added missing column '{col}' to energy_usage table.")
-
-        conn.commit()
-"""
-def update_csv(today, **data):
-    rows = []
-    found = False
-    data['record_date'] = today
-    original_fieldnames = set(data.keys())  # Will be updated with full field list
-
-    # Read existing CSV if it exists
-    if os.path.exists(CSV_PATH):
-        with open(CSV_PATH, 'r', newline='', encoding='utf-8') as f:
-            reader = csv.DictReader(f)
-            original_fieldnames.update(reader.fieldnames or [])
-            for row in reader:
-                if row['record_date'] == today:
-                    # Only update fields in FIELD_NAMES
-                    for field in FIELD_NAMES:
-                        if field in data:
-                            row[field] = data[field]
-                    found = True
-                rows.append(row)
-
-    if not found:
-        # If new row, fill all known fields (others will remain empty)
-        row = {key: '' for key in original_fieldnames}
-        row.update(data)
-        rows.append(row)
-
-    # Ensure consistent field order
-    fieldnames = list(dict.fromkeys(['record_date'] + FIELD_NAMES + list(original_fieldnames)))
-
-    with open(CSV_PATH, 'w', newline='', encoding='utf-8') as f:
-        writer = csv.DictWriter(f, fieldnames=fieldnames)
-        writer.writeheader()
-        writer.writerows(rows)
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
@@ -197,22 +99,9 @@ def index():
                     values[name] = sanitize_number(value)
             else:
                 values[name] = None
-            """
-            with sqlite3.connect(DB_PATH) as conn:
-            c = conn.cursor()
-            placeholders = ", ".join(["?"] * len(FIELD_NAMES))
-            columns = ", ".join(FIELD_NAMES)
-            updates = ", ".join([f"{name}=excluded.{name}" for name in FIELD_NAMES])
-            sql = f'''
-                INSERT INTO energy_usage (record_date, {columns})
-                VALUES (?, {placeholders})
-                ON CONFLICT(record_date) DO UPDATE SET {updates}
-            '''
-            c.execute(sql, (today, *[values[name] for name in FIELD_NAMES]))
-            conn.commit()
-            """
 
-        update_csv(today, **values)
+        upsert_entry(today, values)
+        export_table_to_csv()
         return render_template('form.html', success=True, fields=FIELDS, message="Données envoyées avec succès!")
 
     return render_template('form.html', success=False, fields=FIELDS, message=message, default_date=date.today().isoformat())
@@ -281,12 +170,7 @@ def download_xlsx():
     )
 
 @app.route('/edit', methods=['GET', 'POST'])
-def edit_csv():
-    if not os.path.exists(CSV_PATH):
-        create_blank_csv()
-
-    import json
-
+def edit_db():
     if request.method == 'POST':
         updated_data = request.form.get('table_data')
         if not updated_data:
@@ -294,47 +178,40 @@ def edit_csv():
 
         try:
             updated_rows = json.loads(updated_data)
-            print("Données JSON parsées :", updated_rows)
+            print("Parsed JSON data:", updated_rows)
 
-            # Load original full data (to preserve untouched fields)
-            with open(CSV_PATH, newline='', encoding='utf-8') as f:
-                reader = csv.DictReader(f)
-                original_rows = list(reader)
-                original_headers = reader.fieldnames or []
+            for row in updated_rows:
+                record_date = row.get('record_date')
+                if not record_date:
+                    continue  # skip if no date
 
-            merged_rows = []
-            for i, updated_row in enumerate(updated_rows):
-                original_row = original_rows[i] if i < len(original_rows) else {}
-                merged_row = original_row.copy()
-                merged_row.update(updated_row)  # Overwrite only the updated fields
-                merged_rows.append(merged_row)
+                if row.get('_delete'):
+                    # Perform deletion
+                    delete_entry(record_date)
+                else:
+                    # Perform insert/update
+                    data = {k: v for k, v in row.items() if k not in ('record_date', '_delete')}
+                    upsert_entry(record_date, data)
 
-            with open(CSV_PATH, 'w', newline='', encoding='utf-8') as f:
-                writer = csv.DictWriter(f, fieldnames=original_headers)
-                writer.writeheader()
-                writer.writerows(merged_rows)
+            # Export after all operations
+            export_table_to_csv()
+            print("Database updated (with delete support).")
 
-            print("CSV mis à jour avec conservation des champs supprimés.")
         except Exception as e:
             return f"Failed to save: {e}"
 
-        return redirect(url_for('edit_csv'))
+        return redirect(url_for('edit_db'))
 
-    # GET request
-    with open(CSV_PATH, newline='', encoding='utf-8') as f:
-        reader = csv.DictReader(f)
-        rows = list(reader)
-        original_headers = reader.fieldnames or []
+    # GET request:
+    rows, columns = get_all_entries()
+    dict_rows = [dict(zip(columns, row)) for row in rows]
 
-        # Only show fields you want to edit
-        headers = ['record_date'] + FIELD_NAMES
-        headers = [h for h in headers if h in original_headers]
+    headers = ['record_date'] + FIELD_NAMES
+    headers = [h for h in headers if h in columns]
 
-    return render_template("edit.html", headers=headers, rows=rows, fields=FIELDS)
-
+    return render_template('edit.html', headers=headers, rows=dict_rows, fields=FIELDS)
 
 if __name__ == '__main__':
-    
     os.makedirs(DATA_DIR, exist_ok=True)
-    # init_db()
+    init_db()
     app.run(host='0.0.0.0', port=8080)

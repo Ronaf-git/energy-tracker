@@ -1,4 +1,6 @@
 const fields = [{ name: 'record_date', label: 'Date', type: 'date' }].concat(window.editFields || []);
+const deletedDates = [];
+
 
 const tbody = document.querySelector('#editableTable tbody');
 const form = document.getElementById('editForm');
@@ -77,10 +79,16 @@ tbody.addEventListener('click', e => {
     if (e.target.classList.contains('delete-row-btn')) {
         const row = e.target.closest('tr');
         if (row) {
+            const recordDateCell = row.querySelector('td');
+            const recordDate = recordDateCell?.innerText.trim();
+            if (recordDate) {
+                deletedDates.push(recordDate);
+            }
             row.remove();
         }
     }
 });
+
 
 // Validation
 form.addEventListener('submit', function(e) {
@@ -139,6 +147,13 @@ form.addEventListener('submit', function(e) {
     });
 
     if (!valid) return;
+    // Append deleted rows
+    deletedDates.forEach(date => {
+        rowsData.push({
+            record_date: date,
+            _delete: true
+        });
+    });
 
     input.value = JSON.stringify(rowsData);
     console.log("Données JSON à envoyer :", input.value);

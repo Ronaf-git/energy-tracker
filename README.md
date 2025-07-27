@@ -9,9 +9,9 @@ Idéale pour un usage domestique souhaitant suivre ses postes de consommation (g
 ## Fonctionnalités principales
 
 - Saisie et mise à jour des données via un **formulaire web dynamique**.
-- **Stockage simple** et portable des données dans un fichier CSV (`energy.csv`).
+- **Stockage simple** et portable des données dans une DB SQLite3, avec export automatique vers un fichier CSV (`energy.csv`).
 - **Visualisation graphique** (via Matplotlib) des tendances de consommation avec filtres personnalisables (+ Export au format Excel (`.xlsx`)).
-- **Édition manuelle** du fichier CSV depuis une interface web conviviale.
+- **Édition manuelle** des données depuis une interface web conviviale.
 - **Configuration flexible** des champs via un fichier JSON, sans toucher au code.
 
 
@@ -23,20 +23,13 @@ project_root/
 ├── app.py                   # Application Flask principale
 ├── config/
 │   └── config.json          # Configuration des champs et paramètres
-├── data/
-│   ├── energy.csv           # Fichier CSV des données énergétiques (exemple, peut être supprimé au profit de vos données)
-│   └── energy.db            # Base SQLite (non utilisée dans la version actuelle)
-├── templates/
-│   ├── base.html            # Template HTML
-│   ├── form.html            # Formulaire de saisie
-│   ├── data.html            # Affichage des données et graphiques
-│   └── edit.html            # Interface d'édition CSV
-└── static/                  # Fichiers statiques (CSS, JS, images)
+├── data/                    # DB et fichier CSV (exemple pouvant être supprimé)
+├── templates/               # Pages HTML
+└── static/                  # Fichiers statiques ( CSS, JS, images)
 ```
 **Remarque :**  
-Le fichier `data/energy.csv` fourni est un **exemple de données** servant à la démonstration.  
-Il peut être **supprimé** sans impact avant une première utilisation réelle. 
-Un nouveau fichier CSV sera alors créé selon vos configurations, lors de l'utilisation de l'application. 
+Les fichiers `data/energy.*` fournis sont des **exemples de données** servant à la démonstration.  
+Ils peuvent être **supprimés** sans impact avant une première utilisation réelle. 
 
 
 
@@ -64,7 +57,7 @@ Chaque champ possède plusieurs propriétés :
   Nom affiché à l'utilisateur pour décrire le champ.
 
 - **required** (boolean) :  
-  Indique si le champ est obligatoire (`true`) ou non (`false`).
+  Indique si le champ est obligatoire (`true`) ou non (`false`) lors de l'encodage.
 
 - **type** (string) :  
   Type de donnée attendu pour ce champ. Exemple :  
@@ -140,7 +133,7 @@ ou VOTRE_IP:LE_PORT_EXPOSE
 
 - `/` (GET, POST)  
   Page d'accueil avec formulaire de saisie des données.  
-  En POST, les données sont ajoutées ou mises à jour dans le CSV.
+  En POST, les données sont ajoutées ou mises à jour dans la DB.
 
 - `/data` (GET)  
   Affiche les données filtrées, les variations calculées et un graphique.
@@ -149,13 +142,11 @@ ou VOTRE_IP:LE_PORT_EXPOSE
   Permet de télécharger les données filtrées au format Excel.
 
 - `/edit` (GET, POST)  
-  Interface d'édition du fichier CSV.  
+  Interface d'édition des données.  
   En POST, sauvegarde les modifications en conservant les champs non affichés.
 
 
 ## Remarques
 
-- DB SQLite dans une prochaine version.
-- Les données sont temporairement manipulées via CSV pour simplicité et portabilité.  
 - Les dates doivent être au format ISO `YYYY-MM-DD`.  
-
+- Un script de migration est disponible pour transférer les données des versions 0.3 et précédentes vers la version 0.4 et plus.
