@@ -20,12 +20,27 @@ Idéale pour un usage domestique souhaitant suivre ses postes de consommation (g
 
 ```
 project_root/
-├── app.py                   # Application Flask principale
+├── app/                         # Code de l'application Flask
+│   ├── app.py                   # Point d'entrée principal (routes Flask)
+│   ├── static/                  # Fichiers statiques (CSS, JS, images)
+│   ├── templates/               # Fichiers HTML 
+│   ├── db/                      # Couche DB
+│   │   ├── __init__.py
+│   │   ├── connection.py        # Connexion à la DB
+│   │   ├── schema.py            # Création de la base
+│   │   └── crud.py              # Opérations CRUD
+│   ├── utils/                   # Fonctions utilitaires
+│   │   ├── __init__.py
+│   │   ├── processing.py        # Traitement des données 
+│   │   ├── pivot.py             # Génération de tableaux de synthèse 
+│   │   └── plotting.py          # Génération de graphiques matplotlib
 ├── config/
-│   └── config.json          # Configuration des champs et paramètres
-├── data/                    # DB et fichier CSV (exemple pouvant être supprimé)
-├── templates/               # Pages HTML
-└── static/                  # Fichiers statiques ( CSS, JS, images)
+│   └── config.json              # Configuration de l’application 
+├── data/                        # Contient la base de données et les fichiers exportés 
+│   └── energy.db
+│   └── energy.csv
+├── README.md                    # Documentation du projet
+└── requirements.txt             # Dépendances Python
 ```
 **Remarque :**  
 Les fichiers `data/energy.*` fournis sont des **exemples de données** servant à la démonstration.  
