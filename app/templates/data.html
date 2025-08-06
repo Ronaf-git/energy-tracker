@@ -10,10 +10,14 @@
 <!-- 🔽 Interactive Form -->
 <form id="filterForm" method="get" action="/data">
     <label for="start_date">De :</label>
-    <input type="date" id="start_date" name="start_date" value="{{ request.args.get('start_date', '') }}">
+    <input type="date" id="start_date" name="start_date"
+          value="{{ request.args.get('start_date', '') }}"
+          min="{{ min_date }}" max="{{ max_date }}">
 
     <label for="end_date">À :</label>
-    <input type="date" id="end_date" name="end_date" value="{{ request.args.get('end_date', '') }}">
+    <input type="date" id="end_date" name="end_date"
+          value="{{ request.args.get('end_date', '') }}"
+          min="{{ min_date }}" max="{{ max_date }}">
 
     <label for="data_type">Energie</label>
     <select id="data_type" name="data_type">
@@ -42,9 +46,9 @@
   {% for kpi in kpis %}
     <div class="kpi-box {% if kpi.delta_vs_avg < 0 %}green{% else %}red{% endif %}">
       <strong>{{ kpi.typeNRJ }}</strong><br>
-      Courant : {{ kpi.current | round(2) }}<br>
-      Moy. mobile : {{ kpi.avg | round(2) }}<br>
-      Écart : {{ kpi.delta_vs_avg | round(2) }} ({{ kpi.delta_vs_avg_pct | round(1) }}%)
+      Courant : {{ kpi.current | default(0, true) | round(2) }}<br>
+      Moy. mobile : {{ kpi.avg | default(0, true) | round(2) }}<br>
+      Écart : {{ kpi.delta_vs_avg | default(0, true) | round(2) }} ({{ kpi.delta_vs_avg_pct | default(0, true) | round(1) }}%)
     </div>
   {% endfor %}
 </div>

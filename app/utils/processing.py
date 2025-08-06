@@ -31,13 +31,32 @@ def get_filtered_resampled_data():
     numeric_fields = [f['name'] for f in FIELDS if f.get('type', 'number') == 'number']
     non_numeric_fields = [col for col in df.columns if col not in numeric_fields]
 
-    start_date = pd.to_datetime(request.args.get('start_date'), errors='coerce')
-    end_date = pd.to_datetime(request.args.get('end_date'), errors='coerce')
+    # Parse user input
+    start_date_input = request.args.get('start_date')
+    end_date_input = request.args.get('end_date')
 
-    if pd.isna(start_date): start_date = df.index.min()
-    if pd.isna(end_date): end_date = df.index.max()
+    # Convert to datetime safely
+    start_date = pd.to_datetime(start_date_input, errors='coerce')
+    end_date = pd.to_datetime(end_date_input, errors='coerce')
 
+    # Get available date bounds from the DataFrame
+    min_date = df.index.min()
+    max_date = df.index.max()
+
+    # Fallback if input is missing or invalid
+    if pd.isna(start_date) or start_date < min_date:
+        start_date = min_date
+
+    if pd.isna(end_date) or end_date > max_date:
+        end_date = max_date
+
+    # Final safety check — ensure start_date <= end_date
+    if start_date > end_date:
+        return None, None, f"Invalid date range: start_date {start_date.date()} is after end_date {end_date.date()}."
+
+    # Filter the DataFrame safely
     df_filtered = df.loc[start_date:end_date]
+
     df_numeric = df_filtered[numeric_fields].copy()
     df_daily = df_numeric.resample('D').interpolate(method='linear')
 

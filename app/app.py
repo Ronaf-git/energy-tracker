@@ -67,6 +67,10 @@ def show_data():
         flash(error)
         return redirect(url_for('index'))
 
+    min_date = df_diff.index.min().date().isoformat()  # 'YYYY-MM-DD'
+    max_date = df_diff.index.max().date().isoformat()
+
+
     view = request.args.get('view', 'weekly').lower()
     data_type = request.args.get('data_type', 'all')
 
@@ -97,7 +101,9 @@ def show_data():
         plot_url=plot_url,
         fields=FIELDS,
         download_token=token,
-        kpis=kpis
+        kpis=kpis,
+        min_date=min_date,
+        max_date=max_date,
     )
 
 @app.route('/download_xlsx')
