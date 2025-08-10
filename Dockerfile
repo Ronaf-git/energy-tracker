@@ -4,6 +4,7 @@ FROM python:3.11-slim
 ENV LANG=fr_FR.UTF-8
 ENV LANGUAGE=fr_FR:fr
 ENV LC_ALL=fr_FR.UTF-8
+ENV PYTHONUTF8=1
 
 # Install system packages required for locales
 RUN apt-get update && \

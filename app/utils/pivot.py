@@ -8,7 +8,9 @@ def generate_pivot_summary(df_resampled, view):
     if len(df_resampled) < 2:
         return pd.DataFrame(), []
 
+    print(df_resampled)
     current_idx = df_resampled.index[-1]
+    print(current_idx)
     previous_idx = df_resampled.index[-2]
     last_year_idx = current_idx - DateOffset(years=1)
 
@@ -29,10 +31,6 @@ def generate_pivot_summary(df_resampled, view):
     label_current = current_idx.strftime(fmt)
     label_previous = previous_idx.strftime(fmt)
     label_last_year = last_year_idx.strftime(fmt)
-    # proper encoding
-    label_current = label_current.encode('latin1').decode('utf-8')
-    label_previous = label_previous.encode('latin1').decode('utf-8')
-    label_last_year = label_last_year.encode('latin1').decode('utf-8')
 
     window = {'daily': 365, 'weekly': 52, 'monthly': 12, 'yearly': 1}.get(view, 52)
     moving_avg = df_resampled.rolling(window=window, min_periods=1).mean().iloc[-1]
