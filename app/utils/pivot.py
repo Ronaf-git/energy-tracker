@@ -8,9 +8,7 @@ def generate_pivot_summary(df_resampled, view):
     if len(df_resampled) < 2:
         return pd.DataFrame(), []
 
-    print(df_resampled)
     current_idx = df_resampled.index[-1]
-    print(current_idx)
     previous_idx = df_resampled.index[-2]
     last_year_idx = current_idx - DateOffset(years=1)
 
