@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for, send_file, get_flashed_messages, flash
+from flask_wtf.csrf import CSRFProtect
 from datetime import date
 import os
 import io
@@ -28,7 +29,8 @@ DB_PATH = os.path.join(DATA_DIR, "energy.db")
 CSV_PATH = os.path.join(DATA_DIR, "energy.csv")
 
 app = Flask(__name__)
-app.secret_key = os.urandom(24)
+app.secret_key = os.environ.get('SECRET_KEY') or os.urandom(24)
+csrf = CSRFProtect(app)
 data_cache = {}
 
 @app.route('/', methods=['GET', 'POST'])
