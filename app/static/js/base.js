@@ -1,3 +1,5 @@
+console.log("✅ base.js is loaded");
+
 (function() {
     const html = document.documentElement;
     if (localStorage.getItem('darkMode') === 'enabled') {

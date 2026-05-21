@@ -1,12 +1,23 @@
 
 services:
-  energy_app:
-    image : energy-tracker-energy_app:latest
-    build: .
+  nginx:
+    build: ./nginx
     ports:
-      - "8080:8080"
+      - "127.0.0.1:8080:80"
+    env_file:
+      - .env
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - energy_app
+    restart: always
+
+  energy_app:
+    image: energy-tracker-energy_app:latest
+    build: .
+    env_file:
+      - .env
     volumes:
       - ./data:/data
       - ./config:/config
     restart: always
-
