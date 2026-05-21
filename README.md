@@ -20,8 +20,8 @@ Idéale pour un usage domestique souhaitant suivre ses postes de consommation (g
 
 ```
 project_root/
-├── app/                         # Code de l'application Flask
-│   ├── app.py                   # Point d'entrée principal (routes Flask)
+├── app/                         # Code de l’application Flask
+│   ├── app.py                   # Point d’entrée principal (routes Flask)
 │   ├── static/                  # Fichiers statiques (CSS, JS, images)
 │   ├── templates/               # Fichiers HTML 
 │   ├── db/                      # Couche DB
@@ -39,6 +39,7 @@ project_root/
 ├── data/                        # Contient la base de données et les fichiers exportés 
 │   └── energy.db
 │   └── energy.csv
+├── .env.example                 # Modèle de configuration des variables d’environnement
 ├── README.md                    # Documentation du projet
 └── requirements.txt             # Dépendances Python
 ```
@@ -97,11 +98,20 @@ git clone https://github.com/Ronaf-git/energy-tracker
 cd energy-tracker
 ```
 
-2. Installer les dépendances :
+2. Créer le fichier d'environnement :
+```bash
+cp .env.example .env
+```
+Éditer `.env` et remplacer la valeur de `SECRET_KEY` par une clé générée :
+```bash
+python -c "import secrets; print(secrets.token_hex(32))"
+```
+
+3. Installer les dépendances :
 ```
 py -m pip install -r requirements.txt
 ```
-3. Lancer l'application :
+4. Lancer l'application :
 ```bash
 cd app
 py app.py
@@ -116,7 +126,16 @@ L'application sera accessible sur http://localhost:8080
 git clone https://github.com/Ronaf-git/energy-tracker
 cd energy-tracker
 ```
-2. Actualisez le fichier `docker-compose.yml` à la racine du projet, avec vos port et volumes :
+2. Créer le fichier d'environnement :
+```bash
+cp .env.example .env
+```
+Éditer `.env` et remplacer la valeur de `SECRET_KEY` par une clé générée :
+```bash
+python -c "import secrets; print(secrets.token_hex(32))"
+```
+
+4. Actualisez le fichier `docker-compose.yml` à la racine du projet, avec vos port et volumes :
 
 ```yaml
 services:
@@ -124,22 +143,22 @@ services:
     image: energy-tracker-energy_app:latest
     build: .
     ports:
-      - "VOTRE_PORT:8080"
+      - "127.0.0.1:VOTRE_PORT:8080"
     volumes:
       - VOTRE_DOSSIER_DATA:/data
       - VOTRE_DOSSIER_CONFIG:/config
     restart: always
 ```
 
-3. Construire l'image Docker :
+5. Construire l'image Docker :
 ```
 docker-compose build
 ```
-4. Démarrer le conteneur :
+6. Démarrer le conteneur :
 ```
 docker-compose up -d
 ```
-5. Accéder à l'application dans votre navigateur :
+7. Accéder à l'application dans votre navigateur :
 
 http://localhost:8080
 ou VOTRE_IP:LE_PORT_EXPOSE
