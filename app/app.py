@@ -11,9 +11,9 @@ import pandas as pd
 # 🔄 Import des fonctions dédiées
 from utils.processing import get_filtered_resampled_data, sanitize_number
 from utils.pivot import generate_pivot_summary
-from utils.plotting import generate_plot_image 
 from db.schema import init_db
 from db.crud import get_all_entries, upsert_entry, export_table_to_csv, delete_entry
+import math
 
 # Load config
 CONFIG_PATH = os.path.join(os.path.dirname(__file__), "..", "config", "config.json")
@@ -83,8 +83,20 @@ def show_data():
     token = str(uuid.uuid4())
     data_cache[token] = df_diff.copy()
 
-    # 🔄 Graphique avec helper
-    plot_url = generate_plot_image(df_diff, data_type, view)
+    # 🔄 Données JSON pour ApexCharts
+    chart_data = {
+        "categories": df_diff.index.strftime('%Y-%m-%d').tolist(),
+        "series": [
+            {
+                "name": col,
+                "data": [
+                    None if (isinstance(v, float) and math.isnan(v)) else round(float(v), 3)
+                    for v in df_diff[col].tolist()
+                ]
+            }
+            for col in df_diff.columns
+        ]
+    }
 
     # 🔄 Fusion des données numériques différenciées et non numériques
     df_numeric_diff = df_diff.reset_index()
@@ -100,7 +112,7 @@ def show_data():
         'data.html', content_type='text/html; charset=utf-8',
         tables=[df_merged.to_html(classes='data', index=False)],
         pivot_table=pivot_df.to_html(classes='pivot-table', index=False),
-        plot_url=plot_url,
+        chart_data=json.dumps(chart_data),
         fields=FIELDS,
         download_token=token,
         kpis=kpis,

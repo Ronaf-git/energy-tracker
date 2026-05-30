@@ -7,78 +7,130 @@
 {% endblock %}
 
 {% block content %}
-<!-- 🔽 Interactive Form -->
+
+<!-- Filtres -->
 <form id="filterForm" method="get" action="/data">
-    <label for="start_date">De :</label>
+    <label for="start_date">De</label>
     <input type="date" id="start_date" name="start_date"
-          value="{{ request.args.get('start_date', '') }}"
-          min="{{ min_date }}" max="{{ max_date }}">
+           value="{{ request.args.get('start_date', '') }}"
+           min="{{ min_date }}" max="{{ max_date }}">
 
-    <label for="end_date">À :</label>
+    <label for="end_date">À</label>
     <input type="date" id="end_date" name="end_date"
-          value="{{ request.args.get('end_date', '') }}"
-          min="{{ min_date }}" max="{{ max_date }}">
+           value="{{ request.args.get('end_date', '') }}"
+           min="{{ min_date }}" max="{{ max_date }}">
 
-    <label for="data_type">Energie</label>
+    <label for="data_type">Énergie</label>
     <select id="data_type" name="data_type">
-        <option value="all" {% if request.args.get('data_type') == 'all' or not request.args.get('data_type') %}selected{% endif %}>All</option>
+        <option value="all" {% if request.args.get('data_type') == 'all' or not request.args.get('data_type') %}selected{% endif %}>Toutes</option>
         {% for field in fields %}
         {% if field.type == 'number' %}
-            <option value="{{ field.name }}" 
-            {% if request.args.get('data_type') == field.name %}selected{% endif %}>
-            {{ field.name.replace('_', ' ').capitalize() }}
-            </option>
+        <option value="{{ field.name }}" {% if request.args.get('data_type') == field.name %}selected{% endif %}>
+            {{ field.label }}
+        </option>
         {% endif %}
         {% endfor %}
     </select>
 
-    <label for="view">Voir par</label>
+    <label for="view">Période</label>
     <select id="view" name="view">
-        <option value="daily" {% if request.args.get('view') == 'daily' %}selected{% endif %}>Jour</option>
-        <option value="weekly" {% if request.args.get('view') == 'weekly'  or request.args.get('view') is none %}selected{% endif %}>Semaine</option>
+        <option value="daily"   {% if request.args.get('view') == 'daily' %}selected{% endif %}>Jour</option>
+        <option value="weekly"  {% if request.args.get('view') == 'weekly' or not request.args.get('view') %}selected{% endif %}>Semaine</option>
         <option value="monthly" {% if request.args.get('view') == 'monthly' %}selected{% endif %}>Mois</option>
-        <option value="yearly" {% if request.args.get('view') == 'yearly' %}selected{% endif %}>Année</option>
+        <option value="yearly"  {% if request.args.get('view') == 'yearly' %}selected{% endif %}>Année</option>
     </select>
 </form>
 
 <!-- KPIs -->
 <div class="kpis">
   {% for kpi in kpis %}
-    <div class="kpi-box {% if kpi.delta_vs_avg < 0 %}green{% else %}red{% endif %}">
-      <strong>{{ kpi.typeNRJ }}</strong><br>
-      Courant : {{ kpi.current | default(0, true) | round(2) }}<br>
-      Moy. mobile : {{ kpi.avg | default(0, true) | round(2) }}<br>
-      Écart : {{ kpi.delta_vs_avg | default(0, true) | round(2) }} ({{ kpi.delta_vs_avg_pct | default(0, true) | round(1) }}%)
+  <div class="kpi-box {% if kpi.delta_vs_avg < 0 %}green{% else %}red{% endif %}">
+    <div class="kpi-label">{{ kpi.typeNRJ }}</div>
+    <div class="kpi-value">{{ kpi.current | default(0, true) | round(2) }}</div>
+    <div class="kpi-meta">
+      <span>Moy. <b>{{ kpi.avg | default(0, true) | round(2) }}</b></span>
+      <span class="kpi-delta {% if kpi.delta_vs_avg < 0 %}green{% else %}red{% endif %}">
+        {% if kpi.delta_vs_avg < 0 %}▼{% else %}▲{% endif %}
+        {{ kpi.delta_vs_avg_pct | default(0, true) | round(1) | abs }}%
+      </span>
     </div>
+  </div>
   {% endfor %}
 </div>
 
-<!-- Plot -->
-<img src="data:image/png;base64,{{ plot_url }}" alt="Energy Usage Plot">
-
-<!-- Pivot -->
-<h2>Résumé</h2>
-<div>
-  {{ pivot_table | safe }}
+<!-- Graphique ApexCharts -->
+<div class="chart-container">
+  <div id="apexChart"></div>
 </div>
 
+<!-- Pivot -->
+<h2>Résumé par période</h2>
+{{ pivot_table | safe }}
 
-
-
+<!-- Téléchargement -->
 <div class="button-container">
     <form method="get" action="/download_xlsx">
         <input type="hidden" name="token" value="{{ download_token }}">
-        <button type="submit" class="back-button" style="background-color: #f39c12;">
-            Télécharger en XLSX
-        </button>
+        <button type="submit" class="back-button">⬇ Télécharger XLSX</button>
     </form>
 </div>
 
+<!-- Données brutes -->
+<h2>Données détaillées</h2>
 {% for table in tables %}
     {{ table | safe }}
 {% endfor %}
+
 {% endblock %}
 
 {% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 <script src="{{ url_for('static', filename='js/data.js') }}"></script>
+<script>
+(function () {
+  const chartData = {{ chart_data | safe }};
+  const isDark = () => document.documentElement.classList.contains('dark-mode');
+
+  const buildOptions = (dark) => ({
+    series: chartData.series,
+    chart: {
+      type: 'area',
+      height: 340,
+      background: 'transparent',
+      fontFamily: 'Inter, system-ui, sans-serif',
+      toolbar: { show: true, tools: { download: true, selection: true, zoom: true, zoomin: true, zoomout: true, pan: true, reset: true } },
+      animations: { enabled: true, easing: 'easeinout', speed: 500 },
+      zoom: { enabled: true }
+    },
+    theme: { mode: dark ? 'dark' : 'light' },
+    colors: ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4'],
+    xaxis: {
+      categories: chartData.categories,
+      labels: { rotate: -30, style: { fontSize: '12px' }, datetimeFormatter: { month: 'MMM yy' } },
+      axisBorder: { show: false },
+      axisTicks: { show: false }
+    },
+    yaxis: { labels: { style: { fontSize: '12px' } } },
+    stroke: { curve: 'smooth', width: 2.5 },
+    fill: { type: 'gradient', gradient: { shadeIntensity: 1, opacityFrom: 0.3, opacityTo: 0.02, stops: [0, 100] } },
+    dataLabels: { enabled: false },
+    tooltip: { shared: true, intersect: false },
+    legend: { position: 'top', horizontalAlign: 'right', fontSize: '13px', fontWeight: 500 },
+    grid: { borderColor: dark ? 'rgba(255,255,255,0.06)' : '#e2e8f0', strokeDashArray: 3 },
+    markers: { size: 0, hover: { size: 5 } }
+  });
+
+  const chart = new ApexCharts(document.getElementById('apexChart'), buildOptions(isDark()));
+  chart.render();
+
+  // Sync avec le toggle dark mode
+  new MutationObserver(() => {
+    const dark = isDark();
+    chart.updateOptions({
+      theme: { mode: dark ? 'dark' : 'light' },
+      grid: { borderColor: dark ? 'rgba(255,255,255,0.06)' : '#e2e8f0' }
+    });
+  }).observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+})();
+</script>
 {% endblock %}

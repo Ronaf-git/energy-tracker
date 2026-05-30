@@ -13,27 +13,31 @@
     {% if message %}
         <div id="toast" class="toast">{{ message }}</div>
     {% endif %}
-    
+
     <form method="POST">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
 
-
         <fieldset>
-            <label for="record_date">Date:</label>
-            <input type="date" id="record_date" name="record_date" value="{{ default_date }}">
+            <div class="field">
+                <label for="record_date">Date</label>
+                <input type="date" id="record_date" name="record_date" value="{{ default_date }}">
+            </div>
 
             {% for field in fields %}
-                <label for="{{ field.name }}">{{ field.label }}:</label>
-                <input 
-                    type="{{ field.type if field.type is defined else 'number' }}" 
-                    id="{{ field.name }}" 
-                    name="{{ field.name }}" 
-                    {% if field.type != 'text' %} step="any" {% endif %}
-                    {% if field.required %} required {% endif %}
+            <div class="field">
+                <label for="{{ field.name }}">{{ field.label }}</label>
+                <input
+                    type="{{ field.type if field.type is defined else 'number' }}"
+                    id="{{ field.name }}"
+                    name="{{ field.name }}"
+                    {% if field.type != 'text' %}step="any"{% endif %}
+                    {% if field.required %}required{% endif %}
                 >
+            </div>
             {% endfor %}
         </fieldset>
-        <button type="submit">Envoi</button>
+
+        <button type="submit">Enregistrer</button>
     </form>
 </div>
 {% endblock %}
