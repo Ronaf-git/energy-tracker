@@ -1,147 +1,170 @@
+/* ═══════════════════════════════════════════
+   EDIT PAGE
+═══════════════════════════════════════════ */
 main.content {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #f7f9fc;
-    margin: 0;
-    padding: 20px;
-    max-width: 1200px;
-    margin-left: auto;
-    margin-right: auto;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 32px 24px;
+  font-family: var(--font);
 }
-main.content h1 {
-    text-align: center;
-    color: #007BFF;
-    font-size: 2.5em;
-    margin-bottom: 30px;
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+
+/* ── Barre d'actions ──────────────────────── */
+#editForm > div {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 14px 20px;
+  margin-bottom: 20px;
+  box-shadow: var(--shadow-sm);
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
 }
-main.content table {
-    border-collapse: collapse;
-    width: 100%;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    background-color: white;
-}
-main.content th, main.content td {
-    border: 1px solid #ccc;
-    padding: 10px;
-    text-align: center;
-    min-width: 100px;
-}
-main.content th {
-    background-color: #007BFF;
-    color: white;
-    user-select: none;
-}
-main.content td[contenteditable="true"] {
-    background-color: #fefefe;
-    transition: background-color 0.3s ease;
-}
-main.content td[contenteditable="true"]:focus {
-    background-color: #dbeeff;
-    outline: none;
-}
-main.content button, main.content .nav-links a {
-    margin-top: 20px;
-    padding: 12px 24px;
-    font-size: 16px;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: background-color 0.25s ease;
-    text-decoration: none;
-    color: white;
-    display: inline-block;
-    text-align: center;
-}
+
+/* ── Boutons ──────────────────────────────── */
 main.content button {
-    background-color: #28a745;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 18px;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: var(--font);
+  border: none;
+  border-radius: var(--r);
+  cursor: pointer;
+  white-space: nowrap;
+  min-width: auto;
+  transition: filter 0.15s, transform 0.1s;
 }
-main.content button:hover {
-    background-color: #218838;
+main.content button:active { transform: scale(0.97); }
+
+#addRowBtn {
+  background: var(--surface-2);
+  color: var(--text-2);
+  border: 1.5px solid var(--border) !important;
 }
-main.content .nav-links {
-    margin-top: 20px;
-    display: flex;
-    justify-content: center;
-    gap: 15px;
-}
-main.content .nav-links a:first-child {
-    background-color: #4CAF50;
-}
-main.content .nav-links a:first-child:hover {
-    background-color: #3e8e41;
-}
-main.content .nav-links a:last-child {
-    background-color: #007BFF;
-}
-main.content .nav-links a:last-child:hover {
-    background-color: #0056b3;
-}
-main.content .nav-btn {
-    padding: 12px 24px;
-    font-size: 16px;
-    border-radius: 6px;
-    text-decoration: none;
-    color: white;
-    transition: background-color 0.25s ease;
-    text-align: center;
-}
-main.content .nav-btn:hover {
-    filter: brightness(0.9);
-}
-main.content .table-container {
-    max-height: 500px; /* Adjust height as needed */
-    overflow-y: auto;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    box-shadow: inset 0 0 4px rgba(0,0,0,0.05);
-    background-color: white;
-}
-main.content .delete-row-btn {
-    background-color: #dc3545;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    padding: 6px 10px;
-    cursor: pointer;
-    font-size: 14px;
-}
-main.content .delete-row-btn:hover {
-    background-color: #c82333;
-}
-main.content button, main.content .nav-btn {
-    min-width: 140px;
-    padding: 12px 24px;
-    font-size: 16px;
-    border-radius: 6px;
-    text-align: center;
-    color: white;
-    cursor: pointer;
-    user-select: none;
-    display: inline-flex;
-    justify-content: center;
-    align-items: center;
+#addRowBtn:hover {
+  background: var(--accent-muted);
+  color: var(--accent);
+  border-color: var(--accent) !important;
+  filter: none;
 }
 
+button[type="submit"] {
+  background: var(--accent);
+  color: #fff;
+  box-shadow: 0 4px 14px rgba(99,102,241,0.3);
+}
+button[type="submit"]:hover { filter: brightness(0.9); }
+
+/* ── Table container ──────────────────────── */
+.table-container {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  max-height: 620px;
+  overflow-y: auto;
+}
+
+/* Scrollbar fine */
+.table-container::-webkit-scrollbar { width: 5px; height: 5px; }
+.table-container::-webkit-scrollbar-track { background: transparent; }
+.table-container::-webkit-scrollbar-thumb {
+  background: var(--border-2);
+  border-radius: 3px;
+}
+
+/* ── Table ────────────────────────────────── */
+#editableTable {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 13px;
+}
+
+#editableTable th {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--accent);
+  color: #fff;
+  padding: 12px 16px;
+  text-align: center;
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  user-select: none;
+}
+
+#editableTable td {
+  padding: 9px 14px;
+  text-align: center;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-2);
+  transition: background 0.12s;
+}
+
+#editableTable tr:last-child td { border-bottom: none; }
+
+#editableTable tbody tr:hover td {
+  background: var(--accent-muted);
+  color: var(--text);
+}
+
+#editableTable td[contenteditable="true"]:focus {
+  background: var(--accent-muted);
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+  color: var(--text);
+}
+
+/* ── Bouton supprimer ─────────────────────── */
+.delete-row-btn {
+  background: transparent !important;
+  color: var(--text-3) !important;
+  border: 1.5px solid var(--border) !important;
+  padding: 4px 10px !important;
+  font-size: 13px !important;
+  border-radius: var(--r-sm) !important;
+  box-shadow: none !important;
+  transition: background 0.15s, color 0.15s, border-color 0.15s !important;
+}
+.delete-row-btn:hover {
+  background: var(--danger-muted) !important;
+  color: var(--danger) !important;
+  border-color: var(--danger) !important;
+  filter: none !important;
+}
+
+/* ── Toast ────────────────────────────────── */
 .toast {
-    visibility: hidden;
-    min-width: 250px;
-    background-color: #28a745;
-    color: white;
-    text-align: center;
-    border-radius: 8px;
-    padding: 16px;
-    position: fixed;
-    z-index: 1000;
-    left: 50%;
-    bottom: 30px;
-    transform: translateX(-50%);
-    font-size: 16px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    opacity: 0;
-    transition: opacity 0.5s ease, visibility 0.5s;
+  visibility: hidden;
+  min-width: 260px;
+  background: var(--success);
+  color: #fff;
+  text-align: center;
+  border-radius: var(--r);
+  padding: 14px 20px;
+  position: fixed;
+  z-index: 9999;
+  left: 50%;
+  bottom: 60px;
+  transform: translateX(-50%);
+  font-size: 14px;
+  font-weight: 500;
+  box-shadow: var(--shadow-lg);
+  opacity: 0;
+  transition: opacity 0.4s ease, visibility 0.4s;
 }
+.toast.show { visibility: visible; opacity: 1; }
 
-.toast.show {
-    visibility: visible;
-    opacity: 1;
+/* ── Responsive ───────────────────────────── */
+@media (max-width: 640px) {
+  main.content { padding: 16px; }
+  #editableTable th, #editableTable td { padding: 8px 10px; font-size: 12px; }
 }
